@@ -1,0 +1,25 @@
+# simple-todo-list Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-09-25
+
+## Active Technologies
+- TypeScript (Node.js v22, ESM) + Vite, React, Zustand, @vitejs/plugin-react-swc, vite-tsconfig-paths, ESLint, Prettier, AWS CDK v2, CDK Pipelines, tsx (001-todo-n-n)
+
+## Project Structure
+```
+backend/
+frontend/
+tests/
+```
+
+## Commands
+npm test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] npm run lint
+
+## Code Style
+TypeScript (Node.js v22, ESM): Follow standard conventions
+
+## Recent Changes
+- 001-todo-n-n: Added TypeScript (Node.js v22, ESM) + Vite, React, Zustand, @vitejs/plugin-react-swc, vite-tsconfig-paths, ESLint, Prettier, AWS CDK v2, CDK Pipelines, tsx
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
