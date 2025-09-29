@@ -4,6 +4,54 @@
 - Node.js v22, npm
 - Chrome 現行安定版
 
+## Dev Container
+- ベースイメージ: `mcr.microsoft.com/devcontainers/typescript-node:22`
+- features: `ghcr.io/ChristopherMacGown/devcontainer-features/direnv:1`
+- VS Code 拡張: `esbenp.prettier-vscode`, `dbaeumer.vscode-eslint`
+- 推奨設定:
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  }
+}
+```
+
+### 例: `.devcontainer/devcontainer.json`
+```json
+{
+  "name": "simple-todo-list",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "features": {
+    "ghcr.io/ChristopherMacGown/devcontainer-features/direnv:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit",
+          "source.organizeImports": "explicit"
+        }
+      }
+    }
+  }
+}
+```
+
+### .gitignore
+```
+.envrc
+```
+
 ## セットアップ(ルート)
 ```bash
 npm init -y

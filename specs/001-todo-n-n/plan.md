@@ -10,6 +10,7 @@
 - バックエンドは不要。タスクはメモリ管理(セッション越えの保持なし)。
 - インフラは AWS S3(静的ホスティング) + CloudFront。CDK(v2)でIaC、CDK PipelinesでCI/CD。
 - 環境は1環境のみ。ディレクトリは feature based 構成を採用。
+- Dev Containerでの開発をサポート。
 
 ## Technical Context
 **Language/Version**: TypeScript (Node.js v22, ESM)
@@ -27,6 +28,7 @@
 - ViteはSWCプラグイン使用(Babel不使用)
 - CDK実行はts-nodeではなくtsx
 - パスエイリアス: `@/*` → `./src/*`、Viteでvite-tsconfig-pathsを使用
+- Dev Container: `mcr.microsoft.com/devcontainers/typescript-node:22` ベース、features: `ghcr.io/ChristopherMacGown/devcontainer-features/direnv:1`、VS Code拡張 `esbenp.prettier-vscode`, `dbaeumer.vscode-eslint` を推奨。設定: `editor.formatOnSave=true`, `editor.defaultFormatter=esbenp.prettier-vscode`, `editor.codeActionsOnSave={"source.fixAll.eslint":"explicit","source.organizeImports":"explicit"}`。`.gitignore` に `.envrc` を追加。
 **Scale/Scope**: 単一環境・小規模MVP
 
 ## Constitution Check
@@ -50,6 +52,9 @@ specs/001-todo-n-n/
 
 ### Source Code (repository root)
 ```
+.devcontainer/
+  ├── devcontainer.json
+  └── Dockerfile (不要: ベースイメージ指定で構成)
 frontend/
   ├── index.html
   └── src/
@@ -62,6 +67,7 @@ infra/
   └── cdk/                         # CDK(App, Stacks, Pipeline)
 
 .eslintrc.cjs / .prettierrc
+.gitignore (.envrc を追加)
 package.json (単一)
 cdk.json (appにtsx実行を設定)
 tsconfig.frontend.json (ESM, esnext)
@@ -77,6 +83,7 @@ tsconfig.cdk.json (ESM, esnext)
 - Zustand のシンプルなストア設計
 - CDK v2 + CDK Pipelines でのS3/CloudFront配信とSPAルーティング
 - ESM + tsx でのCDK実行設定
+- Dev Container 構成ベストプラクティス(拡張、features、設定)
 3) `research.md` に決定・根拠・代替案を記載
 
 Output: research.md (本計画で生成)
@@ -85,7 +92,7 @@ Output: research.md (本計画で生成)
 1) Data Model: `Task { title: string, status: "未完了|完了", createdAt: datetime }`
 2) API Contracts: 外部APIなし(フロントのみ)。`contracts/README.md` に明記。
 3) Contract Tests: N/A
-4) Quickstart: ローカル開発/ビルド/デプロイの手順を `quickstart.md` に記載。
+4) Quickstart: ローカル/Dev Container/パイプラインの手順を `quickstart.md` に記載。
 5) Agent Context 更新:
 - 実行: `.specify/scripts/bash/update-agent-context.sh cursor`
 
