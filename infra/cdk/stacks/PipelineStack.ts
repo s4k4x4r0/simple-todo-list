@@ -1,4 +1,6 @@
 import { Stack, StackProps, Stage, StageProps } from 'aws-cdk-lib';
+import { BuildSpec } from 'aws-cdk-lib/aws-codebuild';
+import { PipelineType } from 'aws-cdk-lib/aws-codepipeline';
 import * as pipelines from 'aws-cdk-lib/pipelines';
 import { Construct } from 'constructs';
 import { StaticSiteStack } from './StaticSiteStack';
@@ -22,13 +24,14 @@ export class PipelineStack extends Stack {
 
     const pipeline = new pipelines.CodePipeline(this, 'Pipeline', {
       pipelineName: 'SimpleTodoPipeline',
+      pipelineType: PipelineType.V2,
       selfMutation: true,
       synth: new pipelines.ShellStep('Synth', {
         input: pipelines.CodePipelineSource.connection('s4k4x4r0/simple-todo-list', 'main', {
           connectionArn,
         }),
+        installCommands: ['npm ci', 'npx playwright install --with-deps'],
         commands: [
-          'npm ci',
           'npm run format:check',
           'npm run lint',
           'npm run typecheck',
@@ -37,6 +40,17 @@ export class PipelineStack extends Stack {
           'npx cdk synth',
         ],
       }),
+      synthCodeBuildDefaults: {
+        partialBuildSpec: BuildSpec.fromObject({
+          phases: {
+            install: {
+              'runtime-versions': {
+                nodejs: '22',
+              },
+            },
+          },
+        }),
+      },
     });
 
     pipeline.addStage(new AppStage(this, 'Prod'));
