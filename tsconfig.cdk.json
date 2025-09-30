@@ -8,8 +8,8 @@
     "baseUrl": ".",
     "noEmit": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node"]
   },
   "include": ["infra/cdk"]
 }
-

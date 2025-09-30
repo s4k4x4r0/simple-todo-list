@@ -15,6 +15,47 @@
     "typecheck": "tsc -p tsconfig.frontend.json --noEmit && tsc -p tsconfig.cdk.json --noEmit",
     "test:e2e": "playwright test"
   },
-  "devDependencies": {},
-  "dependencies": {}
+  "devDependencies": {
+    "@playwright/test": "^1.55.1",
+    "@types/node": "^24.6.0",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
+    "@vitejs/plugin-react-swc": "^4.1.0",
+    "aws-cdk-lib": "^2.218.0",
+    "constructs": "^10.4.2",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7",
+    "vite-tsconfig-paths": "^5.1.4"
+  },
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/s4k4x4r0/simple-todo-list.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/s4k4x4r0/simple-todo-list/issues"
+  },
+  "homepage": "https://github.com/s4k4x4r0/simple-todo-list#readme",
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "zustand": "^5.0.8"
+  }
 }
