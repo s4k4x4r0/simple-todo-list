@@ -10,7 +10,7 @@ import { BlockPublicAccess, Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3'
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import { Construct } from 'constructs';
 
-export interface StaticSiteStackProps extends StackProps {}
+export type StaticSiteStackProps = StackProps;
 
 export class StaticSiteStack extends Stack {
   public readonly bucket: Bucket;
