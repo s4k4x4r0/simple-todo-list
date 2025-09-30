@@ -3,15 +3,15 @@
 Feature: 001-todo-n-n
 Docs: `/Users/sakai/simple-todo-list/specs/001-todo-n-n`
 
-原則: セットアップ → 受け入れ確認手順(ドキュメント) → 実装 → インフラ → パイプライン の順。並列 [P] は独立ファイル間のみ。
+原則: セットアップ → (テスト) → 実装 → インフラ → パイプライン。TDD準拠で、各機能のE2Eテスト(Playwright)を先に作成してREDにする。その後実装でGREEN、必要に応じてリファクタ。
 
 ---
 
 T001. ルート初期化とスクリプト定義
 - Files: `/Users/sakai/simple-todo-list/package.json`
 - Actions:
-  - package.json を作成し、`type: module`、`engines.node: ">=22"` を設定
-  - Scripts 追加: `format`, `format:check`, `lint`, `typecheck`, `dev`, `build`
+  - package.json を作成し、`type: module`、`engines.node: ">=22"`
+  - Scripts 追加: `format`, `format:check`, `lint`, `typecheck`, `dev`, `build`, `test:e2e`
 - Depends on: —
 
 T002. ESLint/Prettier 導入
@@ -46,85 +46,107 @@ T005. Vite + React + SWC + パス解決のセットアップ
   - `npm run dev` 起動可能にする
 - Depends on: T001, T003
 
-T006. Zustand ストアの実装
+T006. Playwright 導入と基本設定
+- Files: `/playwright.config.ts`, `/tests/e2e/README.md`
+- Actions:
+  - 依存追加: `@playwright/test`
+  - 設定: `npm run dev` を前提に `http://localhost:5173` をベースURLに設定
+  - Scripts: `test:e2e`: `playwright test`
+- Depends on: T001, T005
+
+T007. E2Eテスト(RED) 追加: タスク追加
+- Files: `/tests/e2e/add-todo.spec.ts`
+- Actions:
+  - シナリオ1: 入力→追加→一覧末尾に未完了で表示
+  - 無効入力: 空/空白のみの間は追加ボタンが無効
+- Depends on: T006
+
+T008. E2Eテスト(RED) 追加: タスク完了
+- Files: `/tests/e2e/complete-todo.spec.ts`
+- Actions:
+  - シナリオ2: 完了操作で状態が完了に変わる。順序は不変
+  - 完了戻し不可: UI上に戻す操作がないこと
+- Depends on: T006
+
+T009. Zustand ストアの実装(GREEN化)
 - Files: `/frontend/src/features/todos/store.ts`
 - Actions:
   - 型 `Task { title: string; status: '未完了'|'完了'; createdAt: string }`
-  - API: `addTask(title)`, `completeTask(id|createdAt)`, `tasks: Task[]`（作成日時昇順を維持）
-  - 空/空白のみタイトルは拒否（ユースケースで制御しても良いが、ガードを用意）
-- Depends on: T005
+  - API: `addTask(title)`, `completeTask(id|createdAt)`, `tasks: Task[]`
+  - 作成時 `createdAt` を付与し、常に昇順を維持
+  - 空/空白タイトルを拒否
+- Depends on: T007, T008
 
-T007. UI 実装（一覧・追加・完了）
+T010. UI 実装（一覧・追加・完了）
 - Files: `/frontend/src/app/App.tsx`, `/frontend/src/features/todos/components/TodoList.tsx`, `/frontend/src/features/todos/components/AddTodo.tsx`, `/frontend/src/styles/app.css`
 - Actions:
   - 単一ページで、タイトル入力 + 追加ボタン（trim 非空まで無効化）
-  - 一覧: タイトルと状態(未完了/完了)のみ表示、完了操作ボタンを提供（戻し不可）
-  - 並び順: 作成日時昇順（完了操作では順序不変）
-- Depends on: T006
+  - 一覧: タイトルと状態(未完了/完了)のみ表示、完了操作ボタン（戻し不可）
+  - 作成日時昇順のまま表示
+- Depends on: T009
 
-T008. 手動受け入れチェックリスト作成
-- Files: `/specs/001-todo-n-n/quickstart.md`（既存へ章追記 or 確認）
+T011. テスト実行でGREEN確認
+- Files: —
 - Actions:
-  - シナリオ: 追加/完了/無効入力/戻し不可 を確認手順として整理
-  - 実行方法（`npm run dev`）を明記
-- Depends on: T007
-- Notes: テスト自動化はスコープ外（MVP）
+  - `npm run dev` をバックグラウンドで起動し、`npm run test:e2e` 実行
+  - すべてのE2EテストがGREENになるまで修正
+- Depends on: T010
 
-T009. CDK 初期化（tsx 実行）
+T012. 受け入れチェックリスト更新
+- Files: `/specs/001-todo-n-n/quickstart.md`
+- Actions:
+  - E2Eテストの場所と起動手順を追記
+  - 手動確認は補助的手段として記載
+- Depends on: T011
+
+T013. CDK 初期化（tsx 実行）
 - Files: `/infra/cdk/app.ts`, `/cdk.json`, `/tsconfig.cdk.json`
 - Actions:
   - `cdk.json` に `"app": "npx tsx infra/cdk/app.ts"` を設定
   - 最小の App/Stack 雛形を作成
 - Depends on: T001, T003
 
-T010. S3 + CloudFront スタック実装
+T014. S3 + CloudFront スタック実装
 - Files: `/infra/cdk/stacks/StaticSiteStack.ts`
 - Actions:
   - S3 バケット（サイトホスティング、OAC経由アクセス）
   - CloudFront ディストリビューション（SPA: 403/404→/index.html 200 フォールバック）
   - 出力: `BucketName`, `DistributionId`
-- Depends on: T009
+- Depends on: T013
 
-T011. フロントエンドビルドとデプロイ手順（ローカル）
+T015. フロントエンドビルドとデプロイ手順（ローカル）
 - Files: `package.json`（scripts 追記）
 - Actions:
   - `build`: `vite build`
   - `deploy:s3`: `aws s3 sync frontend/dist s3://$BUCKET --delete`
   - `deploy:cf-invalidate`: `aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"`
-- Depends on: T005, T010
+- Depends on: T014
 
-T012. CDK Pipelines でCI/CDパイプライン作成
+T016. CDK Pipelines でCI/CDパイプライン作成
 - Files: `/infra/cdk/stacks/PipelineStack.ts`
 - Actions:
-  - ソース: CodeStar Connections(GitHub) などを想定（`CONNECTION_ARN` を環境/コンテキストで指定、main ブランチ）
-  - ShellStep で品質ゲート: `npm run format:check && npm run lint && npm run typecheck`
-  - ShellStep でフロントビルド&デプロイ: `vite build` → `s3 sync` → `cloudfront invalidation`
-  - Wave で `StaticSiteStack` をデプロイ
-  - 失敗時はデプロイしない（パイプラインがFail）
-- Depends on: T010, T011
-- Notes: アカウント/リージョン/接続ARNは `.envrc` や `cdk.json` context で与える
+  - ソース: CodeStar Connections(GitHub) など（`CONNECTION_ARN`、main）
+  - ShellStep (品質ゲート): `npm run format:check && npm run lint && npm run typecheck && npm run build && npm run test:e2e`
+  - ShellStep (配信): `s3 sync` → `cloudfront invalidation`
+  - Wave: `StaticSiteStack` をデプロイ
+  - 失敗時はデプロイしない
+- Depends on: T015, T011
 
-T013. ブートストラップと初回デプロイ準備
+T017. ブートストラップと初回デプロイ準備
 - Files: —
 - Actions:
   - `npx cdk bootstrap`（必要なら）
-  - `npx cdk synth | cat` で合成
+  - `npx cdk synth | cat`
   - `npx cdk deploy --all --require-approval never`
-- Depends on: T012
-
-T014. CI品質ゲート準備（デプロイのみゲート）
-- Files: `/specs/001-todo-n-n/quickstart.md`（パイプライン手順追記）, `/Users/sakai/simple-todo-list/.specify/memory/constitution.md`（反映済み確認）
-- Actions:
-  - パイプラインが `main` push を契機に実行され、品質ゲート失敗時はデプロイ不実施であることを明記
-- Depends on: T012
+- Depends on: T016
 
 ---
 
 Parallel Execution Guidance
-- [P] グループA（設定系、相互独立）: T002, T003, T004（ただしT001完了後）
-- [P] グループB（ドキュメントのみ）: T008, T014（前提タスク完了後なら並列可）
+- [P] グループA: T002, T003, T004（T001完了後で独立）
+- [P] グループB: T007, T008（双方テスト作成のみで独立、T006後）
 
 Dependency Notes
-- フロント: T005 → T006 → T007 → T008
-- インフラ: T009 → T010 → T011 → T012 → T013 → T014
-- 品質ゲートはローカルでも `npm run format:check && npm run lint && npm run typecheck` で随時確認
+- フロント(TDD): T005 → T006 → (T007,T008)[P] → T009 → T010 → T011 → T012
+- インフラ: T013 → T014 → T015 → T016 → T017
+- CIはデプロイのみゲート（憲法v1.1.0）。パイプラインでE2Eを含む品質ゲートを実施
