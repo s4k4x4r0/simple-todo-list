@@ -79,7 +79,7 @@ npm install -D aws-cdk-lib constructs tsx
 # 初回のみ(必要に応じて)
 # npx cdk bootstrap
 
-# 合成/デプロイ
+# 合成/デプロイ（アプリ配信は BucketDeployment で実施）
 npx cdk synth | cat
 npx cdk deploy --all --require-approval never
 ```
@@ -95,11 +95,9 @@ npx cdk deploy --all --require-approval never
   - `ghcr.io/devcontainers/features/aws-cli:1`
 - 認証は `.envrc` に環境変数で設定（例）:
 ```
-export AWS_ACCESS_KEY_ID=... 
+export AWS_ACCESS_KEY_ID=...
 export AWS_SECRET_ACCESS_KEY=...
 export AWS_DEFAULT_REGION=ap-northeast-1
-export BUCKET=your-bucket-name
-export DIST_ID=EABCDEFGHIJ
 ```
 - `.envrc` は `.gitignore` 済み。`direnv allow` で反映。
 - 必要権限(例):

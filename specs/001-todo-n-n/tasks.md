@@ -106,29 +106,32 @@ T013. CDK 初期化（tsx 実行）
   - 最小の App/Stack 雛形を作成
 - Depends on: T001, T003
 
-T014. S3 + CloudFront スタック実装
+T014. S3 + CloudFront(OAC) スタック実装
 - Files: `/infra/cdk/stacks/StaticSiteStack.ts`
 - Actions:
-  - S3 バケット（サイトホスティング、OAC経由アクセス）
-  - CloudFront ディストリビューション（SPA: 403/404→/index.html 200 フォールバック）
+  - S3 バケット（プライベート、Static website hostingは使用しない。OAC経由でのみアクセス）
+  - CloudFront ディストリビューション（OACでS3にアクセス）。制約: /index.html省略不可、リダイレクト不可
   - 出力: `BucketName`, `DistributionId`
+  - 例（主要プロパティ）:
+    - S3 Bucket: `blockPublicAccess=BLOCK_ALL`, `encryption=S3_MANAGED`
+    - Distribution: `defaultBehavior.origin = new origins.S3Origin(bucket)`, `viewerProtocolPolicy=REDIRECT_TO_HTTPS`
+    - OAC: CloudFrontのOrigin Access Controlを有効化し、バケットポリシーで `Principal: cloudfront.amazonaws.com` に対し
+      `Condition: { StringEquals: { "AWS:SourceArn": "arn:aws:cloudfront::${ACCOUNT_ID}:distribution/${distributionId}" } }` を付与
 - Depends on: T013
 
-T015. フロントエンドビルドとデプロイ手順（ローカル）
+T015. フロントエンドビルド（ローカル）
 - Files: `package.json`（scripts 追記）
 - Actions:
   - `build`: `vite build`
-  - `deploy:s3`: `aws s3 sync frontend/dist s3://$BUCKET --delete`
-  - `deploy:cf-invalidate`: `aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"`
 - Depends on: T014
 
-T016. CDK Pipelines でCI/CDパイプライン作成
+T016. CDK Pipelines でCI/CDパイプライン作成（BucketDeployment採用）
 - Files: `/infra/cdk/stacks/PipelineStack.ts`
 - Actions:
   - ソース: CodeStar Connections(GitHub) など（`CONNECTION_ARN`、main）
   - ShellStep (品質ゲート): `npm run format:check && npm run lint && npm run typecheck && npm run build && npm run test:e2e`
-  - ShellStep (配信): `s3 sync` → `cloudfront invalidation`
-  - Wave: `StaticSiteStack` をデプロイ
+  - Wave: `StaticSiteStack` をデプロイ（`aws-cdk-lib/aws-s3-deployment` の `BucketDeployment` を使用）
+    - 例: `new s3deploy.BucketDeployment(this, 'Deploy', { sources: [s3deploy.Source.asset('frontend/dist')], destinationBucket: bucket, distribution, distributionPaths: ['/*'], prune: true })`
   - 失敗時はデプロイしない
 - Depends on: T015, T011
 

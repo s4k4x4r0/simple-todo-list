@@ -8,7 +8,7 @@
 - ユーザがChromeで利用する最小機能のTODOリスト(SPA)を提供。
 - フロントエンドは Vite + React + Zustand。ローカル開発は `npm run dev` で可能。
 - バックエンドは不要。タスクはメモリ管理(セッション越えの保持なし)。
-- インフラは AWS S3(静的ホスティング) + CloudFront。CDK(v2)でIaC、CDK PipelinesでCI/CD。
+- インフラは AWS S3(プライベートバケット) + CloudFront(OAC)。CDK(v2)でIaC、CDK PipelinesでCI/CD。
 - 環境は1環境のみ。ディレクトリは feature based 構成を採用。
 - テストはスコープ内。E2Eは Playwright を採用し、TDD(テスト先行)で進める。
 
@@ -87,7 +87,7 @@ tsconfig.cdk.json (ESM, esnext)
 2) 技術選定ベストプラクティス調査タスク:
 - Vite + React + SWC の推奨設定
 - Zustand のシンプルなストア設計
-- CDK v2 + CDK Pipelines でのS3/CloudFront配信とSPAルーティング
+- CDK v2 + CDK Pipelines でのS3/CloudFront(OAC)配信
 - ESM + tsx でのCDK実行設定
 - Playwright のテスト構成・安定化パターン(起動待機/データ駆動)
 - Dev Container 構成(拡張/feature/設定)
