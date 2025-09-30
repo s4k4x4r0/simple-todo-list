@@ -1,0 +1,20 @@
+{
+  "name": "simple-todo-list",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite --config frontend/vite.config.ts",
+    "build": "vite build --config frontend/vite.config.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc -p tsconfig.frontend.json --noEmit && tsc -p tsconfig.cdk.json --noEmit",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}
