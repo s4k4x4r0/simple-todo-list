@@ -1,6 +1,8 @@
 {
   "name": "simple-todo-list",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "build": {
+    "dockerfile": "./Dockerfile"
+  },
   "features": {
     "ghcr.io/ChristopherMacGown/devcontainer-features/direnv:1": {},
     "ghcr.io/devcontainers/features/aws-cli:1": {},
@@ -18,5 +20,6 @@
         }
       }
     }
-  }
+  },
+  "postCreateCommand": "npx playwright install"
 }
