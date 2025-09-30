@@ -1,7 +1,7 @@
 
 # Implementation Plan: シンプルなブラウザベースのTODOリスト
 
-**Branch**: `001-todo-n-n` | **Date**: 2025-09-25 | **Spec**: `/Users/sakai/simple-todo-list/specs/001-todo-n-n/spec.md`
+**Branch**: `001-todo-n-n` | **Date**: 2025-09-30 | **Spec**: `/Users/sakai/simple-todo-list/specs/001-todo-n-n/spec.md`
 **Input**: Feature specification from `/specs/001-todo-n-n/spec.md`
 
 ## Summary
@@ -10,13 +10,13 @@
 - バックエンドは不要。タスクはメモリ管理(セッション越えの保持なし)。
 - インフラは AWS S3(静的ホスティング) + CloudFront。CDK(v2)でIaC、CDK PipelinesでCI/CD。
 - 環境は1環境のみ。ディレクトリは feature based 構成を採用。
-- Dev Containerでの開発をサポート。
+- テストはスコープ内。E2Eは Playwright を採用し、TDD(テスト先行)で進める。
 
 ## Technical Context
 **Language/Version**: TypeScript (Node.js v22, ESM)
-**Primary Dependencies**: Vite, React, Zustand, @vitejs/plugin-react-swc, vite-tsconfig-paths, ESLint, Prettier, AWS CDK v2, CDK Pipelines, tsx
+**Primary Dependencies**: Vite, React, Zustand, @vitejs/plugin-react-swc, vite-tsconfig-paths, ESLint, Prettier, AWS CDK v2, CDK Pipelines, tsx, @playwright/test
 **Storage**: N/A (永続化なし、メモリのみ)
-**Testing**: 仕様受け入れの手動確認(MVP)。静的検査: ESLint/Prettier
+**Testing**: Playwright(E2E)。TDDでテスト(RED)→実装(GREEN)→リファクタの順。品質ゲートは format/lint/typecheck/e2e を実施
 **Target Platform**: AWS (S3 + CloudFront), ブラウザ=Chrome現行安定版
 **Project Type**: web (frontend + infra)
 **Performance Goals**: MVPのため特に設定なし(CloudFront配信のデフォルト性能を利用)
@@ -28,12 +28,13 @@
 - ViteはSWCプラグイン使用(Babel不使用)
 - CDK実行はts-nodeではなくtsx
 - パスエイリアス: `@/*` → `./src/*`、Viteでvite-tsconfig-pathsを使用
-- Dev Container: `mcr.microsoft.com/devcontainers/typescript-node:22` ベース、features: `ghcr.io/ChristopherMacGown/devcontainer-features/direnv:1`、VS Code拡張 `esbenp.prettier-vscode`, `dbaeumer.vscode-eslint` を推奨。設定: `editor.formatOnSave=true`, `editor.defaultFormatter=esbenp.prettier-vscode`, `editor.codeActionsOnSave={"source.fixAll.eslint":"explicit","source.organizeImports":"explicit"}`。`.gitignore` に `.envrc` を追加。
+- Dev Container: `mcr.microsoft.com/devcontainers/typescript-node:22` ベース、direnv feature、拡張: Prettier/ESLint、保存時フォーマット&明示的ESLint修正有効
+- CIはデプロイのみゲート(憲法v1.1.0)。mainへのマージは通常のGitマージ(PR/ブランチ保護なし)
 **Scale/Scope**: 単一環境・小規模MVP
 
 ## Constitution Check
-- 憲法ファイルは一般テンプレート。違反なし。
-- 単一リポジトリ/単一package.json、テスト最小(MVP)は許容とする。
+- 憲法 v1.1.0 に準拠。Quality Gates(Format/Lint/Typecheck/E2E)はローカル/CIで同一コマンドを実行。
+- CIは失敗時デプロイ不実施(マージは制御しない)方針に一致。
 
 Gate: PASS (Initial)
 
@@ -47,24 +48,29 @@ specs/001-todo-n-n/
 ├── data-model.md        # Phase 1 出力
 ├── quickstart.md        # Phase 1 出力
 ├── contracts/           # Phase 1 出力(本件は外部APIなしの旨を記載)
-└── tasks.md             # Phase 2 出力(/tasks 実行で生成、今回は作成しない)
+└── tasks.md             # Phase 2 出力(/tasks コマンドで生成)
 ```
 
 ### Source Code (repository root)
 ```
 .devcontainer/
-  ├── devcontainer.json
-  └── Dockerfile (不要: ベースイメージ指定で構成)
+  └── devcontainer.json
 frontend/
   ├── index.html
   └── src/
       ├── app/
       ├── features/
-      │   └── todos/               # feature based
+      │   └── todos/
       ├── components/
       └── styles/
 infra/
-  └── cdk/                         # CDK(App, Stacks, Pipeline)
+  └── cdk/
+
+playwright.config.ts
+tests/
+  └── e2e/
+      ├── add-todo.spec.ts
+      └── complete-todo.spec.ts
 
 .eslintrc.cjs / .prettierrc
 .gitignore (.envrc を追加)
@@ -74,7 +80,7 @@ tsconfig.frontend.json (ESM, esnext)
 tsconfig.cdk.json (ESM, esnext)
 ```
 
-**Structure Decision**: Webアプリ+インフラのため、`frontend/` と `infra/` の2ディレクトリ構成。フロントはfeature based。
+**Structure Decision**: Webアプリ+インフラのため、`frontend/` と `infra/` の2ディレクトリ構成。E2Eは `tests/e2e` に配置。
 
 ## Phase 0: Outline & Research
 1) 未解決事項: なし(Clarifications 済)。  
@@ -83,24 +89,27 @@ tsconfig.cdk.json (ESM, esnext)
 - Zustand のシンプルなストア設計
 - CDK v2 + CDK Pipelines でのS3/CloudFront配信とSPAルーティング
 - ESM + tsx でのCDK実行設定
-- Dev Container 構成ベストプラクティス(拡張、features、設定)
+- Playwright のテスト構成・安定化パターン(起動待機/データ駆動)
+- Dev Container 構成(拡張/feature/設定)
 3) `research.md` に決定・根拠・代替案を記載
 
-Output: research.md (本計画で生成)
+Output: research.md (作成済み)
 
 ## Phase 1: Design & Contracts
 1) Data Model: `Task { title: string, status: "未完了|完了", createdAt: datetime }`
 2) API Contracts: 外部APIなし(フロントのみ)。`contracts/README.md` に明記。
-3) Contract Tests: N/A
-4) Quickstart: ローカル/Dev Container/パイプラインの手順を `quickstart.md` に記載。
+3) Tests (E2E skeleton): ユーザストーリーからE2E試験項目を抽出し、Playwrightでシナリオ雛形を作成(初回はRED)
+   - 追加: 入力→追加→末尾に未完了で表示、無効入力でボタン無効
+   - 完了: 完了操作で状態が完了、並び順不変、戻し不可
+4) Quickstart: ローカル/Dev Container/パイプライン/E2E実行手順を `quickstart.md` に記載。
 5) Agent Context 更新:
 - 実行: `.specify/scripts/bash/update-agent-context.sh cursor`
 
-Output: data-model.md, contracts/README.md, quickstart.md, agentファイル
+Output: data-model.md, contracts/README.md, quickstart.md, (E2E skeleton), agentファイル
 
-## Phase 2: Task Planning Approach (説明のみ、生成はしない)
-- tasks.mdは /tasks コマンドで作成。
-- TDD順序と依存順序(モデル→UI)を採用。
+## Phase 2: Task Planning Approach
+- /tasks コマンドで `tasks.md` を生成済み。TDD順(テスト→実装→GREEN→リファクタ)を明記し、CIにE2Eを組み込む。
+- 依存順: モデル→UI→インフラ→パイプライン。独立ファイルは[P]で並列化。
 
 ## Progress Tracking
 
@@ -119,4 +128,4 @@ Output: data-model.md, contracts/README.md, quickstart.md, agentファイル
 - [ ] Complexity deviations documented
 
 ---
-*Based on Constitution v2.1.1 - See `/memory/constitution.md`*
+*Based on Constitution v1.2.0 - See `/memory/constitution.md`*

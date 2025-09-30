@@ -1,11 +1,15 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 → 1.1.0
+- Version change: 1.1.0 → 1.2.0
 - Modified principles/sections:
-  - Development Workflow & Quality Gates: CIはデプロイのみをゲート、マージはブロックしない
-  - Governance: PR/ブランチ保護要件を撤回、mainへの通常マージを明記
-- Added notes: CIトリガとデプロイ不実施条件の明文化
-- Removed requirements: 「PR必須」「ブランチ保護でのマージ不可」
+  - Added new principle: P3. Test-Driven Development (Non‑Negotiable)
+  - Renumbered former P3..P5 to P4..P6
+  - Development Workflow: TDD順序(RED→GREEN→REFACTOR)とE2E必須を明文化
+- Added notes: PlaywrightによるE2Eテストを正式スコープ化
+- Templates requiring updates:
+  ✅ specs/001-todo-n-n/plan.md (version reference updated)
+  ✅ specs/001-todo-n-n/tasks.md (version reference updated)
+  ✅ .specify/templatesは整合性要変更なし（汎用文言のため）
 - Follow-up TODOs: なし
 -->
 
@@ -19,13 +23,16 @@ Sync Impact Report
 ### P2. Simplicity & Scope Discipline (YAGNI)
 本プロジェクトは最小限のTODO管理体験を提供する。機能は仕様で明記された範囲に限定し、不要な複雑性や将来要件の先取りを禁止する。バックエンドや永続化は要求が入るまで導入しない。
 
-### P3. Quality Gates: Format, Lint, Type-Check (Non‑Negotiable)
+### P3. Test-Driven Development (Non‑Negotiable)
+本プロジェクトはTDDを必須とする。ユーザストーリーに基づくE2Eテスト(Playwright)を先に作成して失敗(RED)を確認し、その後に最小実装で通過(GREEN)させ、重複排除や設計改善(リファクタ)を行う。テストは受け入れ条件を自動化し、主要フロー(追加/完了/無効入力/戻し不可)を網羅する。
+
+### P4. Quality Gates: Format, Lint, Type-Check
 コード修正時には、Prettierでのフォーマット、ESLintでのリンティング、`tsc`での型チェックを実行し、エラーを0にすることを必須とする。ローカル実行およびCIで同じコマンドを用いる。CIはデプロイのみをゲートし、マージ可否は制御しない。
 
-### P4. Infrastructure as Code & Pipelines
+### P5. Infrastructure as Code & Pipelines
 インフラはAWS CDK v2でコード化し、CI/CDはCDK Pipelinesで構築・運用する。静的サイトはS3に配置し、配信はCloudFrontを用いる。CDKの実行は`tsx`で行い、単一の`package.json`管理(NPM、workspaces非使用)とする。
 
-### P5. Reproducible Dev Environment
+### P6. Reproducible Dev Environment
 Dev Containerを提供し、`mcr.microsoft.com/devcontainers/typescript-node:22`をベースとする。VS Code拡張は`esbenp.prettier-vscode`と`dbaeumer.vscode-eslint`を必須とし、保存時フォーマットと明示的なESLint修正を有効化する。`direnv` featureを導入し、`.envrc`は`.gitignore`対象とする。
 
 ## Technology Standards
@@ -40,8 +47,10 @@ Dev Containerを提供し、`mcr.microsoft.com/devcontainers/typescript-node:22`
   - `npm run format` (Prettier) を実行し、差分ゼロであること。
   - `npm run lint` (ESLint) を実行し、エラー0であること。
   - `npm run typecheck` (`tsc --noEmit`) を実行し、エラー0であること。
+  - `npm run test:e2e` (Playwright) を実行し、主要シナリオがGREENであること。
+- TDD順序(必須): `test(RED)` → `implement(GREEN)` → `refactor` を徹底し、E2Eを先行させる。
 - CI品質ゲート(必須):
-  - 上記3コマンドをCIで同一に実行し、いずれかが失敗した場合は「デプロイを実施しない」。
+  - 上記コマンド群をCIで同一に実行し、いずれかが失敗した場合は「デプロイを実施しない」。
   - ブランチ保護やPRベースのマージ制御は行わない。
   - トリガ: `main`への`push`(通常のGitマージでPRは使用しない)。
 - ツールチェーン: Node.js v22、NPM、ESM、単一`package.json`。
@@ -55,4 +64,4 @@ Dev Containerを提供し、`mcr.microsoft.com/devcontainers/typescript-node:22`
   - PATCH: 表現の明確化や誤記修正等の非本質的変更
 - コンプライアンス: 「Development Workflow & Quality Gates」のCI品質ゲートを満たさない限り、環境へのデプロイは実施しない。
 
-**Version**: 1.1.0 | **Ratified**: 2025-09-29 | **Last Amended**: 2025-09-30
+**Version**: 1.2.0 | **Ratified**: 2025-09-29 | **Last Amended**: 2025-09-30
