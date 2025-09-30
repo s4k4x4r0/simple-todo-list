@@ -28,12 +28,12 @@
 - ViteはSWCプラグイン使用(Babel不使用)
 - CDK実行はts-nodeではなくtsx
 - パスエイリアス: `@/*` → `./src/*`、Viteでvite-tsconfig-pathsを使用
-- Dev Container: `mcr.microsoft.com/devcontainers/typescript-node:22` ベース、direnv feature、拡張: Prettier/ESLint、保存時フォーマット&明示的ESLint修正有効
-- CIはデプロイのみゲート(憲法v1.1.0)。mainへのマージは通常のGitマージ(PR/ブランチ保護なし)
+- Dev Container: `mcr.microsoft.com/devcontainers/typescript-node:22` ベース、features: direnv + aws-cli、拡張: Prettier/ESLint、保存時フォーマット&明示的ESLint修正有効
+- CIはデプロイのみゲート(憲法v1.2.0)。mainへのマージは通常のGitマージ(PR/ブランチ保護なし)
 **Scale/Scope**: 単一環境・小規模MVP
 
 ## Constitution Check
-- 憲法 v1.1.0 に準拠。Quality Gates(Format/Lint/Typecheck/E2E)はローカル/CIで同一コマンドを実行。
+- 憲法 v1.2.0 に準拠。Quality Gates(Format/Lint/Typecheck/E2E)はローカル/CIで同一コマンドを実行。
 - CIは失敗時デプロイ不実施(マージは制御しない)方針に一致。
 
 Gate: PASS (Initial)

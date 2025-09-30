@@ -71,8 +71,8 @@ T008. E2Eテスト(RED) 追加: タスク完了
 T009. Zustand ストアの実装(GREEN化)
 - Files: `/frontend/src/features/todos/store.ts`
 - Actions:
-  - 型 `Task { title: string; status: '未完了'|'完了'; createdAt: string }`
-  - API: `addTask(title)`, `completeTask(id|createdAt)`, `tasks: Task[]`
+  - 型 `Task { id: string; title: string; status: '未完了'|'完了'; createdAt: string }`
+  - API: `addTask(title)`, `completeTask(id: string)`, `tasks: Task[]`
   - 作成時 `createdAt` を付与し、常に昇順を維持
   - 空/空白タイトルを拒否
 - Depends on: T007, T008
@@ -149,4 +149,22 @@ Parallel Execution Guidance
 Dependency Notes
 - フロント(TDD): T005 → T006 → (T007,T008)[P] → T009 → T010 → T011 → T012
 - インフラ: T013 → T014 → T015 → T016 → T017
-- CIはデプロイのみゲート（憲法v1.1.0）。パイプラインでE2Eを含む品質ゲートを実施
+- CIはデプロイのみゲート（憲法v1.2.0）。パイプラインでE2Eを含む品質ゲートを実施
+
+T018. E2Eテスト(RED) 追加: 重複タイトル許可
+- Files: `/tests/e2e/add-duplicate-todo.spec.ts`
+- Actions:
+  - 同一タイトルを連続で2回追加し、一覧に2件存在することを検証
+- Depends on: T006
+
+T019. E2Eテスト(RED) 追加: 非永続(リロードで消失)
+- Files: `/tests/e2e/non-persistence.spec.ts`
+- Actions:
+  - タスクを1件追加 → `page.reload()` → 一覧が空であることを検証
+- Depends on: T006
+
+T020. E2Eテスト(RED) 任意: 一覧の表示項目が限定的
+- Files: `/tests/e2e/list-fields.spec.ts`
+- Actions:
+  - 一覧にタイトルと状態のみが表示され、作成日時など余分な情報が表示されないことを検証
+- Depends on: T006

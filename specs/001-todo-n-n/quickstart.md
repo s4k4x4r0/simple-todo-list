@@ -26,7 +26,8 @@
   "name": "simple-todo-list",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
   "features": {
-    "ghcr.io/ChristopherMacGown/devcontainer-features/direnv:1": {}
+    "ghcr.io/ChristopherMacGown/devcontainer-features/direnv:1": {},
+    "ghcr.io/devcontainers/features/aws-cli:1": {}
   },
   "customizations": {
     "vscode": {
@@ -88,6 +89,22 @@ npx cdk deploy --all --require-approval never
   - フロントエンドをビルドしてS3へ配置
   - CloudFront キャッシュ無効化
   - CDK スタックの差分デプロイ
+
+## AWS CLI と認証
+- Dev Container features によるAWS CLI提供:
+  - `ghcr.io/devcontainers/features/aws-cli:1`
+- 認証は `.envrc` に環境変数で設定（例）:
+```
+export AWS_ACCESS_KEY_ID=... 
+export AWS_SECRET_ACCESS_KEY=...
+export AWS_DEFAULT_REGION=ap-northeast-1
+export BUCKET=your-bucket-name
+export DIST_ID=EABCDEFGHIJ
+```
+- `.envrc` は `.gitignore` 済み。`direnv allow` で反映。
+- 必要権限(例):
+  - S3: `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket`
+  - CloudFront: `cloudfront:CreateInvalidation`
 
 ## 受け入れ確認
 - ブラウザでアプリを開き、次を確認:

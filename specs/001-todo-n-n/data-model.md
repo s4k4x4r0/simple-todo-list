@@ -2,6 +2,7 @@
 
 ## Entities
 ### Task
+- id: string (内部識別子)
 - title: string (非空、空白のみ不可)
 - status: enum("未完了", "完了")
 - createdAt: datetime (作成時刻、表示順用)
