@@ -1,1 +1,1 @@
-gitleaks git --pre-commit --staged 
+npx lint-staged
