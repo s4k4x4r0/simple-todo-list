@@ -1,5 +1,6 @@
-// ESLint v9 Flat Config
+/** @type {import("eslint").Linter.Config[]} */
 import eslint from '@eslint/js';
+import configPrettier from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -79,5 +80,9 @@ export default [
     rules: {
       '@typescript-eslint/explicit-module-boundary-types': 'off',
     },
+  },
+  {
+    name: 'prettier/config',
+    ...configPrettier,
   },
 ];
