@@ -6,10 +6,9 @@
     "moduleResolution": "bundler",
     "strict": true,
     "baseUrl": ".",
-    "noEmit": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": ["node"],
+    "composite": true
   },
-  "include": ["infra/cdk"]
 }

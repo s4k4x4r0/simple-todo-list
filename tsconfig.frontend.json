@@ -11,9 +11,9 @@
     "paths": {
       "@/*": ["./frontend/src/*"]
     },
-    "noEmit": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "composite": true
   },
   "include": ["frontend/src"]
 }
